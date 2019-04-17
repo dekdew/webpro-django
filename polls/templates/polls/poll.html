@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ poll.title }}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Poll: {{ poll.title }}</h1>
+        <form method="GET" action="{% url 'poll_detail' poll.id %}">
+            <div class="row">
+                {% for question in poll.question_set.all %}
+                <div class="col-md-4">
+                    <div class="card my-3" style="width: 18rem;">
+                        <div class="card-header bg-primary text-white">
+                            {{ question.text }}
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for choice in question.choice_set.all %}
+                            <li class="list-group-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="choice{{ question.id }}" id="{{ choice.id }}" value="{{ choice.id }}" {% if choice.answer %}checked="checked"{% endif %}>
+                                    <label class="form-check-label" for="{{ choice.id }}">
+                                        {{ choice.text }}
+                                    </label>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{% url 'index' %}"  class="btn btn-outline-primary my-3">กลับหน้าแรก</a>
+            <button type="submit" class="btn btn-primary my-3">บันทึก</button>
+            <a href="{% url 'create_comments' poll.id %}"  class="btn btn-secondary my-3">เพิ่ม Comment</a>
+        </form>
+    </div>
+</body>
+</html>
