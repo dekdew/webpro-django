@@ -32,6 +32,7 @@
                         {% for poll in poll_list %}
                             <li>{{ poll.title }} ({{ poll.question_count }} คำถาม)
                                 <a href="{% url 'poll_detail' poll.id %}">detail</a>
+                                <a href="{% url 'update_poll' poll.id %}">update</a>
                             </li>
                         {% endfor %}
                     </ol>

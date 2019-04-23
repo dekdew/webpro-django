@@ -10,10 +10,19 @@
 </head>
 <body>
     <div class="container mt-5">
+        {% if success %}
+            <div class="alert alert-success" role="alert">
+              {{ success }}
+            </div>
+        {% endif %}
         <h1>Create new Poll</h1>
         <form method="POST" action="{% url 'create_poll' %}">
             {% csrf_token %}
             {{ form|crispy }}
+            <hr>
+            <h2>Add Question(s)</h2>
+            {{ formset.management_form }}
+            {{ formset|crispy }}
             <a href="{% url 'index' %}"  class="btn btn-outline-primary my-3">กลับหน้าแรก</a>
             <button type="submit" class="btn btn-primary my-3">Create</button>
         </form>
