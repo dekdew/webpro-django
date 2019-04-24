@@ -30,15 +30,15 @@ class Question(models.Model):
 class Choice(models.Model):
     text = models.CharField(max_length=100)
     value = models.IntegerField(default=0)
-    question = models.ForeignKey(Question, on_delete=models.PROTECT)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     def __str__(self):
         return '(%s) %s' % (self.question.text, self.text)
 
 
 class Answer(models.Model):
-    choice = models.OneToOneField(Choice, on_delete=models.PROTECT)
-    question = models.ForeignKey(Question, on_delete=models.PROTECT)
+    choice = models.OneToOneField(Choice, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
 
 class Comment(models.Model):

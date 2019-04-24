@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core import validators
 from django.core.exceptions import ValidationError
 
-from polls.models import Poll, Question, Choice
+from polls.models import Poll, Question, Choice, Comment
 
 
 def validate_even(value):
@@ -91,6 +91,20 @@ class CommentForm(forms.Form):
   body = forms.CharField(max_length=500, widget=forms.Textarea)
   email = forms.EmailField(required=False)
   tel = forms.CharField(required=False, max_length=10, validators=[phone_validate])
+
+  def clean(self):
+    cleaned_data = super().clean()
+    email = cleaned_data.get('email')
+    tel = cleaned_data.get('tel')
+
+    if not email and not tel:
+      raise forms.ValidationError("ต้องกรอก email หรือ Mobile Number")
+
+
+class CommentModelForm(forms.ModelForm):
+  class Meta:
+    model = Comment
+    exclude = ['poll']
 
   def clean(self):
     cleaned_data = super().clean()

@@ -6,8 +6,11 @@ from django.contrib.auth.models import User
 from django.forms import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from polls.forms import CommentForm, ChangePasswordForm, ProfileForm, PollModelForm, QuestionForm, ChoiceModelForm
-from polls.models import Poll, Question, Answer, Comment, Profile
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
+
+from polls.forms import ChangePasswordForm, ProfileForm, PollModelForm, QuestionForm, ChoiceModelForm, \
+  CommentModelForm
+from polls.models import Poll, Question, Answer, Profile, Choice
 
 
 def index(request):
@@ -150,11 +153,26 @@ def add_choice_api(request, question_id):
         'value': choice['value'],
         'question': question_id
       }
-      form = ChoiceModelForm(data)
-      if form.is_valid():
-        form.save()
+      try:
+        id = choice['id']
+      except:
+        id = None
+      try:
+        choice_model = Choice.objects.get(id=id)
+      except Choice.DoesNotExist:
+        choice_model = None
+
+      if choice_model:
+        form = ChoiceModelForm(data, instance=choice_model)
+        if form.is_valid():
+          form.save()
+
       else:
-        err_list.append(form.errors.as_text())
+        form = ChoiceModelForm(data)
+        if form.is_valid():
+          form.save()
+        else:
+          err_list.append(form.errors.as_text())
 
     if len(err_list) == 0:
       return JsonResponse({'message': 'success'}, status=200)
@@ -164,21 +182,52 @@ def add_choice_api(request, question_id):
   return JsonResponse({'message': 'This API dose not accept GET request.'}, status=405)
 
 
+def get_choice_api(request, question_id):
+  if request.method == 'GET':
+    choice_list = Choice.objects.filter(question=question_id)
+    response = []
+    for choice in choice_list:
+      temp = {}
+      temp['text'] = choice.text
+      temp['value'] = choice.value
+      temp['id'] = choice.id
+      response.append(temp)
+    return JsonResponse({'message': response}, status=200)
+
+  return JsonResponse({'message': 'This API dose not accept POST request.'}, status=405)
+
+
+@csrf_exempt
+def delete_choice_api(request, choice_id):
+  if request.method == 'POST':
+    print(choice_id)
+    choice = Choice.objects.get(id=choice_id)
+    print(choice)
+    choice.delete()
+
+    return JsonResponse({'message': 'success'}, status=200)
+
+  return JsonResponse({'message': 'This API dose not accept GET request.'}, status=405)
+
+
 def create_comments(request, poll_id):
   if request.method == 'POST':
-    form = CommentForm(request.POST)
+    form = CommentModelForm(request.POST)
     if form.is_valid():
-      poll = Poll.objects.get(id=poll_id)
-      Comment.objects.create(
-        poll=poll,
-        title=form.cleaned_data.get('title'),
-        body=form.cleaned_data.get('body'),
-        email=form.cleaned_data.get('email'),
-        tel=form.cleaned_data.get('tel'),
-      )
+      comment = form.save(commit=False)
+      comment.poll_id = poll_id
+      comment.save()
+      # poll = Poll.objects.get(id=poll_id)
+      # Comment.objects.create(
+      #   poll=poll,
+      #   title=form.cleaned_data.get('title'),
+      #   body=form.cleaned_data.get('body'),
+      #   email=form.cleaned_data.get('email'),
+      #   tel=form.cleaned_data.get('tel'),
+      # )
 
   else:
-    form = CommentForm()
+    form = CommentModelForm()
 
   context = {'form': form, 'poll_id': poll_id}
   return render(request, 'polls/create-comment.html', context=context)

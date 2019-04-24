@@ -31,9 +31,10 @@
             </thead>
             <tbody>
                 <tr v-for="choice in choices">
+                    <input type="hidden" v-model="choice.id" value="[[ choice.id ]]">
                     <td><input type="text" class="form-control" v-model="choice.text"></td>
                     <td><input type="number" class="form-control" v-model="choice.value"></td>
-                    <td><button @click="delChoice" class="btn btn-danger btn-block">Delete</button></td>
+                    <td><button @click="delChoice(choice.id)" class="btn btn-danger btn-block">Delete</button></td>
                 </tr>
             </tbody>
         </table>
@@ -67,8 +68,17 @@
                 )
             },
             delChoice(choice) {
-                let index = this.choices.indexOf(choice)
-                this.choices.splice(index, 1)
+                axios
+                    .post('http://localhost:8000/polls/api/' + choice + '/delete-choice/',
+                        {headers: {'X-CSRFTOKEN': csrftoken}}
+                    )
+                    .then(response => {
+                        let index = this.choices.indexOf(choice)
+                        this.choices.splice(index, 1)
+                    })
+                    .catch(error => {
+                        this.errMsg = error.response.data.message
+                    })
             },
             submit() {
                 axios
@@ -84,6 +94,18 @@
                         this.errMsg = error.response.data.message
                     })
             }
+        },
+        mounted: function () {
+            axios
+                .get('http://localhost:8000/polls/api/' + {{ question.id }} + '/get-choice/')
+                .then(response => {
+                    data = response.data.message
+                    choices = data
+                    this.choices = choices
+                })
+                .catch(error => {
+                    this.errMsg = error.response.data.message
+                })
         }
     })
 

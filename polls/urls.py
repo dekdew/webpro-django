@@ -14,4 +14,6 @@ urlpatterns = [
     path('delete/<int:question_id>/', views.delete_question, name='delete_question'),
     path('<int:question_id>/add-choice/', views.add_choice, name='add_choice'),
     path('api/<int:question_id>/add-choice/', views.add_choice_api, name='add_choice_api'),
+    path('api/<int:question_id>/get-choice/', views.get_choice_api, name='get_choice_api'),
+    path('api/<int:choice_id>/delete-choice/', views.delete_choice_api, name='delete_choice_api'),
 ]
